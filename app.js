@@ -1,7 +1,12 @@
 // SafeStep — Core Application Logic with OpenStreetMap, Nominatim Autocomplete Geocoding,
 // OSRM Road-Following Routing, Dynamic Marker Clustering, and Data-Driven Safety Scoring.
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
+// Dynamic API Endpoint: Prioritizes user custom URL from settings, then localhost if in local development, or Render in cloud.
+let API_BASE_URL = localStorage.getItem('safestep_backend_url') || (
+  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://127.0.0.1:8000'
+    : 'https://safestep-backend.onrender.com'
+);
 let isBackendConnected = false;
 let currentTheme = localStorage.getItem('safestep_theme') || 'light';
 let activeMapStyle = 'osm';
@@ -999,6 +1004,17 @@ function closeApiKeyModal() {
 
 function saveApiKeys(e) {
   e.preventDefault();
+  const backendUrl = document.getElementById('keyBackendUrl')?.value.trim() || '';
+  if (backendUrl) {
+    API_BASE_URL = backendUrl.replace(/\/+$/, '');
+    localStorage.setItem('safestep_backend_url', API_BASE_URL);
+  } else {
+    localStorage.removeItem('safestep_backend_url');
+    API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://127.0.0.1:8000'
+      : 'https://safestep-backend.onrender.com';
+  }
+
   const keys = {
     firebase: document.getElementById('keyFirebase')?.value.trim() || '',
     twilioSid: document.getElementById('keyTwilioSid')?.value.trim() || '',
@@ -1008,10 +1024,16 @@ function saveApiKeys(e) {
 
   localStorage.setItem('safestep_api_keys', JSON.stringify(keys));
   closeApiKeyModal();
-  alert('API credentials saved successfully!');
+  checkBackendHealth();
+  alert('Configuration saved! Target backend set to: ' + API_BASE_URL);
 }
 
 function loadSavedApiKeys() {
+  const customBackend = localStorage.getItem('safestep_backend_url');
+  if (document.getElementById('keyBackendUrl')) {
+    document.getElementById('keyBackendUrl').value = customBackend || API_BASE_URL;
+  }
+
   const saved = localStorage.getItem('safestep_api_keys');
   if (saved) {
     try {

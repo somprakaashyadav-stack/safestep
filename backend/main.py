@@ -5,7 +5,10 @@ Predictive Women's Journey Safety & Smart Urban Intelligence Engine
 
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from routes import router
+try:
+    from backend.routes import router
+except ImportError:
+    from routes import router
 
 app = FastAPI(
     title="SafeStep AI Safety Engine API",

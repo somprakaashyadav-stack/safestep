@@ -433,6 +433,13 @@
       </p>
 
       <form onsubmit="saveApiKeys(event)">
+        <!-- Backend API Server URL (Render / Local) -->
+        <div class="api-key-item">
+          <label>Backend API Service URL <span style="color:var(--safe-green);">Render Production / Local</span></label>
+          <input type="text" id="keyBackendUrl" placeholder="https://safestep-backend.onrender.com or http://127.0.0.1:8000" autocomplete="off">
+          <span class="api-key-desc">Point your frontend to your deployed Render FastAPI service or local instance.</span>
+        </div>
+
         <!-- Firebase Auth -->
         <div class="api-key-item">
           <label>Firebase Auth Web API Key <span style="color:var(--accent);">Optional Auth</span></label>
