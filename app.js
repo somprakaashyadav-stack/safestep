@@ -1,12 +1,21 @@
 // SafeStep — Core Application Logic with OpenStreetMap, Nominatim Autocomplete Geocoding,
 // OSRM Road-Following Routing, Dynamic Marker Clustering, and Data-Driven Safety Scoring.
 
-// Dynamic API Endpoint: Prioritizes user custom URL from settings, then localhost if in local development, or Render in cloud.
-let API_BASE_URL = localStorage.getItem('safestep_backend_url') || (
-  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://127.0.0.1:8000'
-    : 'https://safestep-backend.onrender.com'
-);
+function getApiBaseUrl() {
+  const custom = localStorage.getItem('safestep_backend_url');
+  if (custom) return custom.replace(/\/+$/, '');
+
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return window.location.port
+      ? `${window.location.protocol}//${window.location.hostname}:${window.location.port}`
+      : 'http://localhost:8000';
+  }
+
+  // In production (Vercel): use relative URL so vercel.json reverse-proxies directly to Render
+  return '';
+}
+
+let API_BASE_URL = getApiBaseUrl();
 let isBackendConnected = false;
 let currentTheme = localStorage.getItem('safestep_theme') || 'light';
 let activeMapStyle = 'osm';
@@ -937,28 +946,47 @@ async function checkBackendHealth() {
   const engineSource = document.getElementById('routeEngineSource');
 
   pill.className = 'backend-status-pill checking';
-  text.textContent = 'Connecting...';
+  text.textContent = 'Connecting Backend...';
 
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/health`, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' },
-      signal: AbortSignal.timeout(2000)
-    });
+  // Probe candidates: active base URL, relative path (Vercel proxy), or Render cloud
+  const probeUrls = [];
+  if (API_BASE_URL) {
+    probeUrls.push(`${API_BASE_URL}/api/v1/health`);
+  } else {
+    probeUrls.push('/api/v1/health');
+    probeUrls.push('https://safestep-backend.onrender.com/api/v1/health');
+  }
 
-    if (res.ok) {
-      isBackendConnected = true;
-      pill.className = 'backend-status-pill online';
-      text.textContent = '🟢 Backend Connected (Port 8000)';
-      if (engineSource) engineSource.textContent = 'OSRM + AI Engine Live';
-      return true;
-    }
-  } catch (err) {}
+  for (const url of probeUrls) {
+    try {
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        signal: AbortSignal.timeout(4500)
+      });
+
+      if (res.ok) {
+        isBackendConnected = true;
+        pill.className = 'backend-status-pill online';
+        
+        let label = 'Local Server';
+        if (API_BASE_URL) {
+          try { label = new URL(API_BASE_URL, window.location.href).host; } catch(e) { label = API_BASE_URL; }
+        } else {
+          label = 'Render Cloud Proxy';
+        }
+
+        text.textContent = `🟢 Backend Live (${label})`;
+        if (engineSource) engineSource.textContent = 'OSRM + AI Engine Live';
+        return true;
+      }
+    } catch (err) {}
+  }
 
   isBackendConnected = false;
   pill.className = 'backend-status-pill offline';
-  text.textContent = '🟡 Standalone Mode (Client Engine)';
-  if (engineSource) engineSource.textContent = 'OSRM Road Engine';
+  text.textContent = '🟡 Standalone Mode (Client Engine Active)';
+  if (engineSource) engineSource.textContent = 'OSRM Road Engine (Direct)';
   return false;
 }
 
