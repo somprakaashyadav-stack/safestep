@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeStep - AI-Powered Predictive Women's Journey Safety</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(18, 25, 41, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #f43f5e;
+      --primary-glow: rgba(244, 63, 94, 0.3);
+      --secondary: #8b5cf6;
+      --accent: #0ea5e9;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --gradient: linear-gradient(135deg, #f43f5e 0%, #a855f7 50%, #38bdf8 100%);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    .ambient-glow {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 0;
+      background: 
+        radial-gradient(circle at 10% 15%, rgba(244, 63, 94, 0.15) 0%, transparent 45%),
+        radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.06) 0%, transparent 60%);
+    }
+
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      padding: 18px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 50;
+      background: linear-gradient(to bottom, rgba(9, 13, 22, 0.95), transparent);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .brand-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 18px var(--primary-glow);
+    }
+
+    .brand-badge svg { width: 20px; height: 20px; fill: white; }
+
+    .slide-counter {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+    }
+
+    .slider-viewport {
+      flex: 1;
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 70px 40px 80px;
+    }
+
+    .slide {
+      position: absolute;
+      width: 92%;
+      max-width: 1240px;
+      height: 78vh;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(25px) scale(0.98);
+      transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      width: fit-content;
+      margin-bottom: 12px;
+    }
+
+    .tag-pink { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
+    .tag-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .tag-blue { background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.3); }
+    .tag-green { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+    h1.slide-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      letter-spacing: -0.03em;
+    }
+
+    .gradient-text {
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p.subtitle {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      max-width: 900px;
+      margin-bottom: 22px;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 20px;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card:hover {
+      border-color: rgba(255, 255, 255, 0.22);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+    }
+
+    .card h3 { font-size: 1.05rem; font-weight: 700; color: #fff; }
+    .card p { font-size: 0.88rem; color: var(--text-muted); line-height: 1.45; }
+
+    .callout-box {
+      background: linear-gradient(135deg, rgba(244, 63, 94, 0.1), rgba(168, 85, 247, 0.1));
+      border: 1px solid rgba(244, 63, 94, 0.3);
+      padding: 16px 20px;
+      border-radius: 14px;
+      margin-top: 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .callout-box p { font-size: 0.98rem; font-weight: 600; color: #fff; }
+
+    /* Time Risk Card */
+    .time-badge-container {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .time-badge {
+      flex: 1;
+      padding: 14px;
+      border-radius: 12px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .time-badge.low { border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.08); }
+    .time-badge.med { border-color: rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.08); }
+    .time-badge.high { border-color: rgba(244, 63, 94, 0.4); background: rgba(244, 63, 94, 0.08); }
+
+    .time-badge h4 { font-size: 1.1rem; font-weight: 800; margin-bottom: 4px; }
+    .time-badge.low h4 { color: #34d399; }
+    .time-badge.med h4 { color: #fbbf24; }
+    .time-badge.high h4 { color: #fb7185; }
+    .time-badge p { font-size: 0.8rem; color: #cbd5e1; }
+
+    /* Workflow Pipeline */
+    .workflow-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .workflow-step {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      padding: 14px;
+      border-radius: 12px;
+      position: relative;
+    }
+
+    .step-num {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--primary);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      padding: 18px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 50;
+      background: linear-gradient(to top, rgba(9, 13, 22, 0.95), transparent);
+    }
+
+    .progress-bar {
+      width: 280px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--gradient);
+      width: 14.28%;
+      transition: width 0.3s ease;
+    }
+
+    .controls { display: flex; gap: 10px; }
+
+    .btn-nav {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-nav:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .btn-nav:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .hint { font-size: 0.8rem; color: var(--text-muted); }
+
+    .hero-slide {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-title {
+      font-size: 3.8rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-bottom: 12px;
+    }
+
+    .hero-tagline {
+      font-size: 1.35rem;
+      color: #e2e8f0;
+      margin-bottom: 20px;
+      max-width: 820px;
+      line-height: 1.45;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 16px;
+      margin-top: 24px;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    .hero-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 8px 16px;
+      border-radius: 30px;
+      border: 1px solid var(--card-border);
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-badge">
+        <svg viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
+      </div>
+      <span>SafeStep</span>
+    </div>
+    <div class="slide-counter" id="slideCounter">Slide 1 / 7</div>
+  </header>
+
+  <!-- Slider Viewport -->
+  <main class="slider-viewport">
+    
+    <!-- SLIDE 1: Title Slide -->
+    <section class="slide hero-slide active" data-slide="1">
+      <div class="tag tag-pink">AI & Geospatial Intelligence</div>
+      <h1 class="hero-title"><span class="gradient-text">SafeStep</span></h1>
+      <p class="hero-tagline">AI-Powered Predictive Women's Journey Safety and Smart Urban Intelligence System</p>
+      <div class="callout-box" style="max-width: 680px;">
+        <span style="font-size: 1.4rem;">🛡️</span>
+        <p>"Safer Journeys Begin with Smarter Decisions — Proactive, Not Just Reactive."</p>
+      </div>
+      <div class="hero-meta">
+        <div class="hero-meta-item">📍 OSRM & PostGIS Routing</div>
+        <div class="hero-meta-item">🤖 Time-Dependent ML Regressor</div>
+        <div class="hero-meta-item">📷 YOLO Street Audit</div>
+        <div class="hero-meta-item">🏛️ Civic Action Portal</div>
+      </div>
+    </section>
+
+    <!-- SLIDE 2: Problem Statement -->
+    <section class="slide" data-slide="2">
+      <div class="tag tag-pink">Slide 2 · Problem Statement</div>
+      <h1 class="slide-title">Why Do We Need <span class="gradient-text">SafeStep?</span></h1>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-icon">🚨</div>
+          <h3>Reactive vs. Proactive Gap</h3>
+          <p>Traditional safety tools strictly focus on SOS alarms and location broadcasting after distress occurs, leaving the danger unprevented.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🌙</div>
+          <h3>Nighttime Navigation Hazard</h3>
+          <p>Women struggle to identify safer corridors after dark, where isolated shortcuts appear identical to safe arterial avenues on map tools.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">💡</div>
+          <h3>Infrastructure Deficits</h3>
+          <p>Broken streetlights, secluded bus stops, unmonitored footpaths, and lack of nearby commercial activity multiply travel anxiety.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🧭</div>
+          <h3>Shortest-Path Algorithmic Bias</h3>
+          <p>Commercial navigation systems (Google Maps) optimize solely for minimum ETA and distance, ignoring pedestrian safety parameters.</p>
+        </div>
+      </div>
+      <div class="callout-box">
+        <span style="font-size: 1.3rem;">🎯</span>
+        <p><strong>Core Challenge:</strong> How can technology empower women to identify potential environmental risks before their journey begins and choose safer alternatives?</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 3: Proposed Solution & Core Innovation -->
+    <section class="slide" data-slide="3">
+      <div class="tag tag-purple">Slide 3 · Core Innovation</div>
+      <h1 class="slide-title">Time-Dependent <span class="gradient-text">Safety Intelligence</span></h1>
+      <p class="subtitle">The standout innovation is our <strong>Time-Dependent Road Safety Engine</strong>: a road segment's risk dynamically changes based on hours, illumination, and pedestrian presence.</p>
+      
+      <div class="time-badge-container">
+        <div class="time-badge low">
+          <h4>2:00 PM · Low Risk (🟢)</h4>
+          <p>Broad daylight, active commercial storefronts, heavy pedestrian footfall, open public transit.</p>
+        </div>
+        <div class="time-badge med">
+          <h4>7:00 PM · Moderate Risk (🟡)</h4>
+          <p>Dusk transitions, crowded transit junctions, varying streetlamp functionality, high vehicle traffic.</p>
+        </div>
+        <div class="time-badge high">
+          <h4>11:00 PM · High Risk (🔴)</h4>
+          <p>Closed shops, sparse civilian movement, dark spots, isolated transit stops. Model penalizes this path.</p>
+        </div>
+      </div>
+
+      <div class="callout-box" style="margin-top: 18px;">
+        <span style="font-size: 1.3rem;">📊</span>
+        <p><strong>Data Transparency:</strong> SafeStep delivers transparent <em>Confidence Levels</em> and <em>Data Freshness</em> scores — recognizing that scores are intelligent estimates, not guarantees.</p>
+      </div>
+    </section>
+
+    <!-- SLIDE 4: Key Features to Develop -->
+    <section class="slide" data-slide="4">
+      <div class="tag tag-blue">Slide 4 · Main Capabilities</div>
+      <h1 class="slide-title">8 Comprehensive <span class="gradient-text">System Features</span></h1>
+      <div class="grid-4">
+        <div class="card">
+          <div class="card-icon">🧠</div>
+          <h3>1. Predictive Safety Scoring</h3>
+          <p>Micro-segment safety scores with green, yellow, red risk overlays.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">👥</div>
+          <h3>2. Community Reporting</h3>
+          <p>Anonymous hazard logs with auto-decay for stale historical reports.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">📷</div>
+          <h3>3. AI Street Audit</h3>
+          <p>YOLO vision on photos to spot broken lamps, blind spots & potholes.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🛣️</div>
+          <h3>4. Safe Route Engine</h3>
+          <p>OSRM multi-route generation with Explainable AI reasoning.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🚏</div>
+          <h3>5. Last-Mile Transit</h3>
+          <p>Audits bus stops, metro gates, and connected walking paths.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🏥</div>
+          <h3>6. Safe Shelter Finder</h3>
+          <p>Locates nearby 24/7 police, hospitals, pharmacies & verified hubs.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🆘</div>
+          <h3>7. Emergency SOS</h3>
+          <p>Instant trusted-contact location dispatch with voluntary tracking.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">📊</div>
+          <h3>8. Civic Dashboard</h3>
+          <p>Municipal heatmap showing recurring infrastructure defects.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 5: Tech Stack & 9 Core Modules -->
+    <section class="slide" data-slide="5">
+      <div class="tag tag-green">Slide 5 · Architecture</div>
+      <h1 class="slide-title">Technology Stack & <span class="gradient-text">9 Modules</span></h1>
+      
+      <div class="grid-2">
+        <div class="card">
+          <h3>🛠️ Verified Technology Matrix</h3>
+          <ul style="margin-left: 20px; font-size: 0.88rem; color: var(--text-muted); line-height: 1.7;">
+            <li><strong>Frontend:</strong> React.js, Tailwind CSS, Leaflet.js</li>
+            <li><strong>Backend:</strong> Python FastAPI (Async High Throughput)</li>
+            <li><strong>Spatial Database:</strong> PostgreSQL + PostGIS (Geo-indexing)</li>
+            <li><strong>Routing Engine:</strong> OSRM (Custom safety edge penalties)</li>
+            <li><strong>Machine Learning:</strong> Python, Scikit-learn (Risk Regressor)</li>
+            <li><strong>Computer Vision:</strong> YOLOv8 (Streetlight & defect audit)</li>
+            <li><strong>Analytics & Auth:</strong> Chart.js & Firebase Auth</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>📦 The 9 System Modules</h3>
+          <ul style="margin-left: 20px; font-size: 0.88rem; color: var(--text-muted); line-height: 1.7;">
+            <li>1. User Registration & Authentication (Firebase)</li>
+            <li>2. Interactive Map & Spatial Manager (Leaflet + PostGIS)</li>
+            <li>3. Community Incident Reporting (Spam-filtered)</li>
+            <li>4. AI Predictive Safety Analysis (Temporal ML)</li>
+            <li>5. Street Image Detection (YOLO Infrastructure)</li>
+            <li>6. Intelligent Route Recommendation (OSRM + XAI)</li>
+            <li>7. Public Transport Safety Assessment (Buffer audit)</li>
+            <li>8. Emergency Assistance & Safe Shelters (SOS)</li>
+            <li>9. Civic Dashboard & Analytics (Municipal portal)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 6: Complete Workflow -->
+    <section class="slide" data-slide="6">
+      <div class="tag tag-pink">Slide 6 · System Flow</div>
+      <h1 class="slide-title">Complete <span class="gradient-text">Project Workflow</span></h1>
+      
+      <div class="workflow-grid">
+        <div class="workflow-step">
+          <div class="step-num">Step 01 · Origin</div>
+          <h3 style="font-size: 0.95rem; margin-bottom: 6px;">User Request</h3>
+          <p style="font-size: 0.82rem; color: var(--text-muted);">User launches SafeStep, enters origin and destination coordinates.</p>
+        </div>
+        <div class="workflow-step">
+          <div class="step-num">Step 02 · Spatial Query</div>
+          <h3 style="font-size: 0.95rem; margin-bottom: 6px;">PostGIS Data Fetch</h3>
+          <p style="font-size: 0.82rem; color: var(--text-muted);">Extracts road segments, historical incidents, and ambient lighting buffers.</p>
+        </div>
+        <div class="workflow-step">
+          <div class="step-num">Step 03 · ML Scoring</div>
+          <h3 style="font-size: 0.95rem; margin-bottom: 6px;">Temporal AI Risk</h3>
+          <p style="font-size: 0.82rem; color: var(--text-muted);">Calculates dynamic road segment risk scores based on time and incidents.</p>
+        </div>
+        <div class="workflow-step">
+          <div class="step-num">Step 04 · OSRM Routing</div>
+          <h3 style="font-size: 0.95rem; margin-bottom: 6px;">Alternative Paths</h3>
+          <p style="font-size: 0.82rem; color: var(--text-muted);">OSRM balances safety vs. distance to generate recommended alternative paths.</p>
+        </div>
+        <div class="workflow-step">
+          <div class="step-num">Step 05 · Map Display</div>
+          <h3 style="font-size: 0.95rem; margin-bottom: 6px;">Visual Comparison</h3>
+          <p style="font-size: 0.82rem; color: var(--text-muted);">Shows Color-coded routes (🟢/🟡/🔴) on Leaflet with explainable tags.</p>
+        </div>
+        <div class="workflow-step">
+          <div class="step-num">Step 06 · Safe Shelters</div>
+          <h3 style="font-size: 0.95rem; margin-bottom: 6px;">En-Route Protection</h3>
+          <p style="font-size: 0.82rem; color: var(--text-muted);">Displays real-time police kiosks, hospitals, and 24/7 pharmacies along the path.</p>
+        </div>
+        <div class="workflow-step">
+          <div class="step-num">Step 07 · Journey Start</div>
+          <h3 style="font-size: 0.95rem; margin-bottom: 6px;">Tracking & SOS</h3>
+          <p style="font-size: 0.82rem; color: var(--text-muted);">Optional trusted-contact live tracking with instantaneous SOS panic button.</p>
+        </div>
+        <div class="workflow-step">
+          <div class="step-num">Step 08 · Civic Loop</div>
+          <h3 style="font-size: 0.95rem; margin-bottom: 6px;">Admin Analytics</h3>
+          <p style="font-size: 0.82rem; color: var(--text-muted);">Aggregates reported dark spots and broken lights for municipal repair teams.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 7: 3-Phase Roadmap & Conclusion -->
+    <section class="slide" data-slide="7">
+      <div class="tag tag-purple">Slide 7 · Roadmap & Conclusion</div>
+      <h1 class="slide-title">Development Roadmap & <span class="gradient-text">Impact</span></h1>
+      
+      <div class="grid-3" style="margin-bottom: 18px;">
+        <div class="card" style="border-top: 3px solid #38bdf8;">
+          <h3 style="color: #38bdf8;">Phase 1: Core Foundation</h3>
+          <p>Interactive Leaflet map, PostGIS road network, basic OSRM route generation, Firebase Auth, and incident reporting forms.</p>
+        </div>
+        <div class="card" style="border-top: 3px solid #a855f7;">
+          <h3 style="color: #c084fc;">Phase 2: Predictive Engine</h3>
+          <p>Temporal Scikit-learn risk regressor, dynamic road segment scoring, multi-route comparison UI, and Safe Shelter discovery.</p>
+        </div>
+        <div class="card" style="border-top: 3px solid #f43f5e;">
+          <h3 style="color: #fb7185;">Phase 3: Vision & Civic</h3>
+          <p>YOLO street condition detection, last-mile transit audits, and the Municipal Civic Intelligence Dashboard with Chart.js.</p>
+        </div>
+      </div>
+
+      <div class="callout-box" style="border-color: rgba(244, 63, 94, 0.4);">
+        <span style="font-size: 1.5rem;">🌟</span>
+        <p><strong>Conclusion:</strong> SafeStep bridges the gap between reactive emergency responses and smart preventive decisions. <em>"Safer Journeys Begin with Smarter Decisions."</em></p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer Navigation -->
+  <footer>
+    <div class="hint">Use <strong>← / →</strong> or <strong>Space</strong> to navigate</div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="controls">
+      <button class="btn-nav" id="prevBtn" disabled>Prev</button>
+      <button class="btn-nav" id="nextBtn">Next</button>
+    </div>
+  </footer>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    let currentSlide = 0;
+
+    const counter = document.getElementById('slideCounter');
+    const progress = document.getElementById('progressFill');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    function updateSlide(index) {
+      if (index < 0 || index >= totalSlides) return;
+      slides[currentSlide].classList.remove('active');
+      currentSlide = index;
+      slides[currentSlide].classList.add('active');
+
+      counter.textContent = `Slide ${currentSlide + 1} / ${totalSlides}`;
+      progress.style.width = `${((currentSlide + 1) / totalSlides) * 100}%`;
+
+      prevBtn.disabled = currentSlide === 0;
+      nextBtn.disabled = currentSlide === totalSlides - 1;
+    }
+
+    prevBtn.addEventListener('click', () => updateSlide(currentSlide - 1));
+    nextBtn.addEventListener('click', () => updateSlide(currentSlide + 1));
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        updateSlide(currentSlide + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        updateSlide(currentSlide - 1);
+      } else if (e.key === 'Home') {
+        updateSlide(0);
+      } else if (e.key === 'End') {
+        updateSlide(totalSlides - 1);
+      }
+    });
+  </script>
+</body>
+</html>
